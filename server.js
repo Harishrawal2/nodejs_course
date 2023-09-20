@@ -1,12 +1,13 @@
 const express = require("express");
 const dotenv = require("dotenv").config();
 const app = express();
+const MongoDBConnection = require("./src/config/database");
 
 // middlerwares
 app.use(express.json());
 
-// routes
-app.use("/api", require("./src/routes/player"));
+// DataBase Connection
+MongoDBConnection();
 
 const port = process.env.PORT || 4000;
 
