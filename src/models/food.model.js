@@ -1,49 +1,46 @@
 const { Schema } = require("mongoose");
 const mongoose = require("mongoose");
 
-const userSchema = new Schema(
+const foodSchema = new Schema(
   {
-    firstName: {
+    restaurantId: {
       type: String,
       required: true,
     },
-    lastName: {
+    name: {
       type: String,
       required: true,
     },
-    email: {
+    description: {
       type: String,
-      required: true,
-      unique: true,
+      required: false,
     },
-    password: {
-      type: String,
-      required: true,
-    },
-    address: {
-      type: String,
-    },
-    phone: {
+    price: {
       type: String,
       required: true,
     },
-    carts: [
-      {
-        food: { type: mongoose.SchemaTypes.ObjectId, ref: "Food" },
-        unit: { type: Number },
-      },
-    ],
+    foodType: {
+      type: String,
+      required: true,
+    },
+    cookingTime: {
+      type: String,
+      required: false,
+    },
+    rating: {
+      type: String,
+      required: true,
+    },
   },
   {
     toJSON: {
       transform(doc, ret) {
-        delete ret.password;
         delete ret.__v;
       },
     },
   }
 );
 
-const User = mongoose.model("User", userSchema);
+const Food = mongoose.model("Food", foodSchema);
 
-module.exports = User;
+module.exports = Food;

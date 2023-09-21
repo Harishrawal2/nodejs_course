@@ -1,13 +1,13 @@
 const { Schema } = require("mongoose");
 const mongoose = require("mongoose");
 
-const userSchema = new Schema(
+const restaurantSchema = new Schema(
   {
-    firstName: {
+    name: {
       type: String,
       required: true,
     },
-    lastName: {
+    ownerName: {
       type: String,
       required: true,
     },
@@ -27,10 +27,13 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
-    carts: [
+    serviceAvailable: {
+      type: Boolean,
+    },
+    foods: [
       {
-        food: { type: mongoose.SchemaTypes.ObjectId, ref: "Food" },
-        unit: { type: Number },
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: "Food",
       },
     ],
   },
@@ -44,6 +47,6 @@ const userSchema = new Schema(
   }
 );
 
-const User = mongoose.model("User", userSchema);
+const Restaurant = mongoose.model("Restaurant", restaurantSchema);
 
-module.exports = User;
+module.exports = Restaurant;
