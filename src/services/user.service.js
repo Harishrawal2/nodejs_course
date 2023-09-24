@@ -8,6 +8,7 @@ const {
   decodePassword,
 } = require("../utils/passwordHelper");
 const { createToken } = require("../utils/tokenHelper");
+const { generateOTP, expiry_time, sendOTP } = require("../utils/otpHelper");
 
 // Create User Business Service Logic
 const createUser = async (body) => {
@@ -18,6 +19,9 @@ const createUser = async (body) => {
     password: body.password,
     address: body.address,
     phone: body.phone,
+    verified: "false",
+    otp: generateOTP(),
+    otp_expiry: expiry_time(),
   };
 
   // hashed password
@@ -25,9 +29,10 @@ const createUser = async (body) => {
   user.password = hashPassword(body.password, salt);
 
   const result = await User.create(user);
-  const token = createToken(user.email, user.firstName);
+  // sending OTP to Your Phone Number
+  await sendOTP(user.otp, user.phone);
 
-  return { result: result, token: token };
+  return { result, msg: "OTP sent to your phone number" };
 };
 
 // Find All Users Logic
@@ -173,6 +178,7 @@ const getAllMyPayments = async (email) => {
   }
 };
 
+// CREATE MY ORDERS
 const createOrderService = async (email, body) => {
   const user = await User.findOne({ email: email });
 
@@ -208,12 +214,40 @@ const createOrderService = async (email, body) => {
   return result;
 };
 
+// GET MY ALL ORDERS
 const GetAllMyOrders = async (email) => {
   const user = await User.findOne({ email: email }).populate("orders");
 
   if (!user) {
     return "No user found with this email";
   }
+  return user;
+};
+
+const verifyMyAccount = async (email, otp) => {
+  const user = await User.findOne({ email: email });
+
+  if (!user) {
+    return "No user found with this email";
+  }
+  if (user.verified) {
+    return "Your Account is already verified";
+  }
+
+  if (new Date() > user.otp_expiry) {
+    user.otp = generateOTP();
+    user.otp_expiry = expiry_time();
+    await user.save();
+    await sendOTP(user.otp, user.phone);
+
+    return "Your OTP is Expired, Sent new OTP on your contact number";
+  } else if (user.otp == Number(otp)) {
+    user.verified = true;
+    await user.save();
+  } else {
+    return "OTP is wrong, Try it with correct OTP";
+  }
+
   return user;
 };
 
@@ -230,4 +264,5 @@ module.exports = {
   getAllMyPayments,
   createOrderService,
   GetAllMyOrders,
+  verifyMyAccount,
 };
