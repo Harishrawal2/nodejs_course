@@ -1,5 +1,6 @@
 const User = require("../models/user.model");
 const Food = require("../models/food.model");
+const Transaction = require("../models/transaction.model");
 const {
   genratePassword,
   hashPassword,
@@ -51,6 +52,7 @@ const checkEmailPassword = async (user) => {
   }
 };
 
+// get user by token find information Email verification
 const userByEmail = async (email) => {
   const user = await User.findOne({ email: email });
   if (user) {
@@ -60,14 +62,15 @@ const userByEmail = async (email) => {
   }
 };
 
-// Add to cart
+// ADD TO CART
 const addFoodToCart = async (email, foodId, unit) => {
   const user = await User.findOne({ email: email });
   if (user) {
     const food = await Food.findOne({ _id: foodId });
     if (!food) {
-      return "No Food Found with this Food Id";
+      return "No Food Found with this Food ID";
     }
+
     if (user.carts.length == 0 && unit > 0) {
       user.carts.push({ food: foodId, unit: unit });
     } else {
@@ -86,12 +89,90 @@ const addFoodToCart = async (email, foodId, unit) => {
         user.carts.push({ food: foodId, unit: unit });
       }
     }
+
     const response = await user.save();
     return response;
   } else {
-    return "No user Found with this email";
+    return "No User Found with this email";
   }
 };
+
+// GET MY ALL MY CART INFO
+const getMyCartInfo = async (email) => {
+  const user = await User.findOne({ email: email }).populate("carts.food");
+
+  if (user) {
+    return user;
+  } else {
+    return "No User Found with this email";
+  }
+};
+
+// CLEAR CART
+const clearCart = async (email) => {
+  const user = await User.findOne({ email: email });
+  if (user) {
+    if (user.carts.length == 0) {
+      return "cart is already empty";
+    } else {
+      user.carts = [];
+      await user.save();
+      return user;
+    }
+  } else {
+    return "No User Found with this email";
+  }
+};
+
+// CREATE PAYMENT
+const createPaymentService = async (email, body) => {
+  const user = await User.findOne({ email: email });
+
+  if (user) {
+    const transaction = {
+      userId: user._id,
+      restaurantId: body.restaurantId,
+      amount: body.amount,
+      paymentMode: body.paymentMode,
+    };
+    if (body.paymentMode == "COD") {
+      transaction.paymentStatus = "PENDING";
+    } else {
+      transaction.paymentStatus = "COMPLETED";
+    }
+
+    const result = await Transaction.create(transaction);
+
+    return result;
+  } else {
+    return "No user found with this email";
+  }
+};
+
+// GET A PAYMENT
+const getAPaymentService = async (paymentId) => {
+  const result = await Transaction.findOne({ _id: paymentId });
+  if (!result) {
+    return "Invalid Payment ID";
+  }
+  return result;
+};
+
+// GET ALL PAYMENT
+const getAllMyPayments = async (email) => {
+  const user = await User.findOne({ email: email });
+  if (user) {
+    const result = await Transaction.find({ userId: user._id });
+    if (!result) {
+      return "No Transaction Found for this user";
+    }
+    return result;
+  } else {
+    return "No user found with this email";
+  }
+};
+
+
 
 module.exports = {
   createUser,
@@ -99,4 +180,9 @@ module.exports = {
   checkEmailPassword,
   userByEmail,
   addFoodToCart,
+  getMyCartInfo,
+  clearCart,
+  createPaymentService,
+  getAPaymentService,
+  getAllMyPayments,
 };

@@ -5,6 +5,8 @@ const {
   returnARestaurant,
   toggleServices,
   addFoodToRestaurant,
+  getTotalAmountService,
+  markAsCompleted,
 } = require("../services/restaurant.service");
 
 const signupRestaurant = async (req, res) => {
@@ -79,6 +81,30 @@ const addFood = async (req, res) => {
   }
 };
 
+const getTotalAmounts = async (req, res) => {
+  try {
+    const email = req.email;
+    const response = await getTotalAmountService(email);
+
+    return res.json({ message: response });
+  } catch (error) {
+    console.log(error);
+    return res.json({ Error: error });
+  }
+};
+
+const markPaymentComplete = async (req, res) => {
+  try {
+    const paymentId = req.params.paymentId;
+
+    const response = await markAsCompleted(paymentId);
+    return res.json({ message: response });
+  } catch (error) {
+    console.log(error);
+    return res.json({ Error: error });
+  }
+};
+
 module.exports = {
   signupRestaurant,
   loginRestaurant,
@@ -86,4 +112,6 @@ module.exports = {
   getARestaurants,
   updateServices,
   addFood,
+  getTotalAmounts,
+  markPaymentComplete,
 };

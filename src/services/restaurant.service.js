@@ -1,5 +1,6 @@
 const Restaurant = require("../models/restaurant.model");
 const { createToken } = require("../utils/tokenHelper");
+const Transaction = require("../models/transaction.model");
 const {
   hashPassword,
   genratePassword,
@@ -104,6 +105,45 @@ const addFoodToRestaurant = async (email, body) => {
   }
 };
 
+const getTotalAmountService = async (email) => {
+  const restaurant = await Restaurant.findOne({ email: email });
+
+  if (!restaurant) {
+    return "no restaurant found for this email address";
+  }
+  const transactions = await Transaction.find({ restaurantId: restaurant._id });
+
+  if (transactions.length == 0) {
+    return "no transaction found for this Restaurant";
+  }
+
+  let totalAmount = 0;
+  transactions.forEach((item) => {
+    if (item.paymentStatus == "COMPLETED") {
+      totalAmount += Number(item.amount);
+    }
+  });
+
+  return { transactions, totalAmount };
+};
+
+//
+const markAsCompleted = async (paymentId) => {
+  const transaction = await Transaction.findOne({ _id: paymentId });
+
+  if (!transaction) {
+    return "no transaction found for this paymentId";
+  }
+
+  if (transaction.paymentStatus == "COMPLETED") {
+    return "Payment is already completed";
+  }
+  transaction.paymentStatus = "COMPLETED";
+  await transaction.save();
+
+  return { transaction, result: "Payment is completed now" };
+};
+
 module.exports = {
   createRestaurant,
   checkEmailPassword,
@@ -111,4 +151,6 @@ module.exports = {
   returnARestaurant,
   toggleServices,
   addFoodToRestaurant,
+  getTotalAmountService,
+  markAsCompleted,
 };
