@@ -10,6 +10,8 @@ const {
   createPayment,
   getAPayment,
   getAllPayment,
+  createOrder,
+  GetOrders,
 } = require("../controllers/user.controller");
 const UserRouter = express.Router();
 const authToken = require("../middleware/auth.token");
@@ -43,5 +45,11 @@ UserRouter.get("/payment/:paymentId", authToken, getAPayment);
 
 // Get all my  payments or transactions
 UserRouter.get("/payments", authToken, getAllPayment);
+
+// create a order
+UserRouter.post("/orders", authToken, createOrder);
+
+// Get all orders
+UserRouter.get("/orders", authToken, GetOrders);
 
 module.exports = UserRouter;
