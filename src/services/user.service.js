@@ -8,7 +8,14 @@ const {
   decodePassword,
 } = require("../utils/passwordHelper");
 const { createToken } = require("../utils/tokenHelper");
-const { generateOTP, expiry_time, sendOTP } = require("../utils/otpHelper");
+const {
+  generateOTP,
+  expiry_time,
+  sendOTP,
+  sendMailToRestaurant,
+} = require("../utils/otpHelper");
+const mailConfig = require("../config/mail.config");
+const Restaurant = require("../models/restaurant.model");
 
 // Create User Business Service Logic
 const createUser = async (body) => {
@@ -182,7 +189,7 @@ const getAllMyPayments = async (email) => {
 const createOrderService = async (email, body) => {
   const user = await User.findOne({ email: email });
 
-  if (!user) {
+  if (!user || !user.verified) {
     return "No user found with this email";
   }
 
@@ -211,7 +218,23 @@ const createOrderService = async (email, body) => {
   user.orders.push(result);
   await user.save();
 
-  return result;
+  await mailConfig.sendMail({
+    from: process.env.Email,
+    to: user.email,
+    subject: "Order Booked Successfully",
+    text: `Your Order Booked Successfully, Total amount Paid : ${totalAmount}`,
+  });
+
+  const restaurant = await Restaurant.findOne({ _id: body.restaurantId });
+  await sendMailToRestaurant(restaurant.phone, user.firstName, user.address);
+  await mailConfig.sendMail({
+    from: process.env.Email,
+    to: restaurant.email,
+    subject: "New Order Booked for Your Restaurant",
+    text: `Order Details are -> ,Total Amount Paid - ${totalAmount}`,
+  });
+
+  return { result, mailStatus: "Mail sent Successfully" };
 };
 
 // GET MY ALL ORDERS

@@ -29,29 +29,29 @@ const sendOTP = async (otp, contactNumber) => {
   }
 };
 
-// const sendMailToRestaurant = async (
-//   restaurantNumber,
-//   userName,
-//   userAddress
-// ) => {
-//   try {
-//     const client = twilio(process.env.ACC_SID, process.env.AUTH_TOKEN);
+const sendMailToRestaurant = async (
+  restaurantNumber,
+  userName,
+  userAddress
+) => {
+  try {
+    const client = twilio(process.env.ACC_SID, process.env.AUTH_TOKEN);
 
-//     await client.messages.create({
-//       body: `${userName} has ordered at ${userAddress}`,
-//       from: "+12513877817",
-//       to: `+91${restaurantNumber}`,
-//     });
+    await client.messages.create({
+      body: `${userName} has ordered at ${userAddress}`,
+      from: "+12052930243",
+      to: `+91${restaurantNumber}`,
+    });
 
-//     console.log("SMS sent Successfully");
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
+    console.log("SMS sent Successfully");
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 module.exports = {
   generateOTP,
   expiry_time,
   sendOTP,
-  // sendMailToRestaurant,
+  sendMailToRestaurant,
 };
