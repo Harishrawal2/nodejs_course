@@ -4,6 +4,7 @@ const app = express();
 const MongoDBConnection = require("./src/config/database");
 const userRoutes = require("./src/routes/user.route");
 const RestaurantRouter = require("./src/routes/restaurant.route");
+const mailConfig = require("./src/config/mail.config");
 
 // middlerwares
 app.use(express.json());
@@ -16,10 +17,6 @@ app.use("/api/auth", userRoutes);
 
 // RESTAORANT ROUTES API
 app.use("/api", RestaurantRouter);
-
-app.use("/", (req, res) => {
-  res.json({ message: "Hello World" });
-});
 
 const port = process.env.PORT || 4000;
 
